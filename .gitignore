@@ -32,6 +32,9 @@ npm-debug.log
 # truffle build directory
 build/
 
+# forge out directory
+out/
+
 # macOS
 .DS_Store
 

@@ -20,6 +20,12 @@ build:; forge build
 test :; forge test 
 
 # use the "@" to hide the command from your shell 
+# Constructor expects the following arguments:
+# 	1. VRF subscription id
+# 	2. VRF coordinator address
+# 	3. LINK token address
+# 	4. Key hash
+
 deploy-fuji :; @forge create --rpc-url ${FUJI_RPC_URL} \
     --constructor-args \
 	428  \
@@ -28,4 +34,5 @@ deploy-fuji :; @forge create --rpc-url ${FUJI_RPC_URL} \
 	0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61 \
     --private-key ${PRIVATE_KEY} src/Contract.sol:TLCNFT \
     --etherscan-api-key ${SNOWTRACE_API_KEY} \
-    --verify
+	--verify
+    
