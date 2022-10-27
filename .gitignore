@@ -35,6 +35,9 @@ build/
 # forge out directory
 out/
 
+# forge lib directory
+lib/
+
 # macOS
 .DS_Store
 
