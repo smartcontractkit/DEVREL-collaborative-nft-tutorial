@@ -47,7 +47,7 @@ contract TLCNFT is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Ownable {
     uint256[] public s_randomWords;
     uint256 public s_requestId;
     mapping(uint256 => address) public requestIdToAddress;
-    uint256 _totalValues = 0;
+    uint256 public totalValues = 0;
     mapping(uint256 => uint256[]) public _totalRandomWords;
 
     uint256 public width = 1920;
@@ -87,125 +87,23 @@ contract TLCNFT is VRFConsumerBaseV2, ERC721, ERC721URIStorage, Ownable {
         s_subscriptionId = subscriptionId;
     }
 
-    function mintNFT(address to) public onlyOwner {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        string memory _finalSVG = string(
-            abi.encodePacked(headSVG, "", tailSVG)
-        );
-        string memory json = Base64.encode(
-            bytes(
-                string(
-                    abi.encodePacked(
-                        '{"name": "The Largest Collaborative NFT",',
-                        '"description": "The Largest Collaborative NFT for SmartCon 2022",',
-                        '"image": "data:image/svg+xml;base64,',
-                        Base64.encode(bytes(_finalSVG)),
-                        '"}'
-                    )
-                )
-            )
-        );
-        string memory finalTokenURI = string(
-            abi.encodePacked("data:application/json;base64,", json)
-        );
-        _setTokenURI(0, finalTokenURI);
-    }
-
-    // Assumes the subscription is funded sufficiently.
-    function claimYourSpot() public {
-        // Will revert if subscription is not set and funded.
-        s_requestId = COORDINATOR.requestRandomWords(
-            s_keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
-        );
-    }
-
     function fulfillRandomWords(uint256, uint256[] memory randomWords)
         internal
         override
     {
         s_randomWords = randomWords;
-        _totalRandomWords[_totalValues] = randomWords;
-        _totalValues += 1;
+        _totalRandomWords[totalValues] = randomWords;
+        totalValues += 1;
         requestIdToAddress[s_requestId] = msg.sender;
-        emit SpotClaimed("Your spot has been claimed!");
     }
 
-    function tokenURI(uint256)
+    function tokenURI(uint256 tokenId)
         public
         view
         override(ERC721, ERC721URIStorage)
         returns (string memory)
     {
-        string memory _bodySVG = "";
-        for (uint256 i = 0; i < _totalValues; i++) {
-            uint256[] memory randomWords = _totalRandomWords[i];
-            uint256 shapeNum = randomWords[1] % 3;
-            uint256 w = 0;
-            if (shapeNum == 0) {
-                w = 14;
-            } else if (shapeNum == 1) {
-                w = 3;
-            }
-            if (shapeNum == 2) {
-                _bodySVG = string(
-                    abi.encodePacked(
-                        _bodySVG,
-                        "<circle cx='",
-                        string(Strings.toString(randomWords[0] % width)),
-                        "' cy='",
-                        string(Strings.toString(randomWords[0] % height)),
-                        "' r='7' fill='none' stroke='",
-                        colors[randomWords[0] % 3],
-                        "' stroke-width='3' />"
-                    )
-                );
-            } else {
-                _bodySVG = string(
-                    abi.encodePacked(
-                        _bodySVG,
-                        "<rect x='",
-                        string(Strings.toString(randomWords[0] % width)),
-                        "' y='",
-                        string(Strings.toString(randomWords[0] % height)),
-                        "' width='",
-                        string(Strings.toString(w)),
-                        "' height='14' fill='",
-                        colors[randomWords[0] % 3],
-                        "' />"
-                    )
-                );
-            }
-        }
-        string memory _finalSVG = string(
-            abi.encodePacked(headSVG, _bodySVG, tailSVG)
-        );
-        string memory json = Base64.encode(
-            bytes(
-                string(
-                    abi.encodePacked(
-                        '{"name": "The Largest Collaborative NFT",',
-                        '"description": "The Largest Collaborative NFT for SmartCon 2022",',
-                        '"image": "data:image/svg+xml;base64,',
-                        Base64.encode(bytes(_finalSVG)),
-                        '"}'
-                    )
-                )
-            )
-        );
-        string memory finalTokenURI = string(
-            abi.encodePacked("data:application/json;base64,", json)
-        );
-        return finalTokenURI;
-    }
-
-    function changeCallbackGas(uint32 _callbackGasLimit) public onlyOwner {
-        callbackGasLimit = _callbackGasLimit;
+        return super.tokenURI(tokenId);
     }
 
     // The following functions are overrides required by Solidity.

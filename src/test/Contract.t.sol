@@ -26,14 +26,7 @@ contract ContractTest is DSTest, ERC721Holder {
         vrfCoordinator = new MockVRFCoordinatorV2();
         subId = vrfCoordinator.createSubscription();
         vrfCoordinator.fundSubscription(subId, FUND_AMOUNT);
-        c = new TLCNFT(
-            subId,
-            address(vrfCoordinator),
-            address(linkToken),
-            keyHash
-        );
         vrfCoordinator.addConsumer(subId, address(c));
-        c.mintNFT(address(this));
     }
 
     function testSetup() public {}
@@ -47,47 +40,6 @@ contract ContractTest is DSTest, ERC721Holder {
         vrfCoordinator.fulfillRandomWords(requestId, address(c));
         assertTrue(c.s_randomWords(0) == words[0]);
         assertTrue(c.s_randomWords(1) == words[1]);
-    }
-
-    function testClaim() public {
-        c.claimYourSpot();
-        uint256 requestId = c.s_requestId();
-        vrfCoordinator.fulfillRandomWords(requestId, address(c));
-        assertTrue(keccak256(abi.encodePacked(c.tokenURI(0))) != keccak256(""));
-    }
-
-    function testMultiClaim() public {
-        uint256 requestId;
-        string memory tokenURI;
-        c.claimYourSpot();
-        requestId = c.s_requestId();
-        vrfCoordinator.fulfillRandomWords(requestId, address(c));
-        assertTrue(
-            keccak256(abi.encodePacked(c.tokenURI(0))) !=
-                keccak256(abi.encodePacked(tokenURI))
-        );
-        tokenURI = c.tokenURI(0);
-        c.claimYourSpot();
-        requestId = c.s_requestId();
-        vrfCoordinator.fulfillRandomWords(requestId, address(c));
-        assertTrue(
-            keccak256(abi.encodePacked(c.tokenURI(0))) !=
-                keccak256(abi.encodePacked(tokenURI))
-        );
-        tokenURI = c.tokenURI(0);
-        c.claimYourSpot();
-        requestId = c.s_requestId();
-        vrfCoordinator.fulfillRandomWords(requestId, address(c));
-        assertTrue(
-            keccak256(abi.encodePacked(c.tokenURI(0))) !=
-                keccak256(abi.encodePacked(tokenURI))
-        );
-        tokenURI = c.tokenURI(0);
-        emit log(c.tokenURI(0));
-    }
-
-    function testGetURI() public view {
-        c.tokenURI(0);
     }
 
     function getWords(uint256 requestId)
